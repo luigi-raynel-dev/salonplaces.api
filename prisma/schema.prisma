@@ -14,11 +14,13 @@ datasource db {
 }
 
 model Manager {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   userName  String
   email     String
   password  String
   avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 }
 
 model Plan {
@@ -30,10 +32,12 @@ model Plan {
   trialMonths       Int
   pixDiscount       Int
   PlanCountry       PlanCountry[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now())
 }
 
 model PlanCountry {
-  id                       Int     @id @default(autoincrement())
+  id                       Int      @id @default(autoincrement())
   planId                   Int
   name                     String
   code                     Int
@@ -48,42 +52,317 @@ model PlanCountry {
   quaterlyPricePerUser     Float
   yearlyPricePerUser       Float
   active                   Boolean
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now())
 
-  plan  Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
-  Salon Salon[]
+  plan     Plan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  Salon    Salon[]
+  Invoices Invoices[]
 }
 
 model Card {
-  id              String  @id @default(cuid())
+  id              String   @id @default(cuid())
+  salonId         String
   number          Int
   expirationMonth Int
   expirationYear  Int
   cvv             Int
   debit           Boolean
-  Salon           Salon[]
+  selected        Boolean
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  salon    Salon      @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  Invoices Invoices[]
 }
 
 model Salon {
-  id                  String   @id @default(cuid())
+  id                  String    @id @default(cuid())
   planCountryId       Int
   cardIdForRecurrence String?
   name                String
   slug                String
   cnpj                String?
   cpf                 String?
+  holder              String?
   description         String?
   cancellationPolicy  String?
   active              Boolean
   percentageDiscount  Int
+  logoUrl             String?
+  coverUrl            String?
+  phone               String?
   instagram           String?
   tiktok              String?
   facebook            String?
   block               Boolean
   blockReason         String?
   recurrence          Boolean
-  planExpirationDate  DateTime
+  planExpirationDate  DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
 
-  planCountry PlanCountry @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  planCountry          PlanCountry            @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  Card                 Card[]
+  SalonMedia           SalonMedia[]
+  Location             Location[]
+  SalonHasProfessional SalonHasProfessional[]
+  Service              Service[]
+  Invoices             Invoices[]
+}
 
-  cardForRecurrence Card? @relation(fields: [cardIdForRecurrence], references: [id], onDelete: Cascade)
+model SalonMedia {
+  id        Int      @id @default(autoincrement())
+  url       String
+  filename  String
+  salonId   String
+  order     Int
+  createdAt DateTime @default(now())
+
+  salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+}
+
+model Location {
+  id                Int      @id @default(autoincrement())
+  salonId           String
+  name              String?
+  active            Boolean
+  phone             String?
+  logoUrl           String?
+  coverUrl          String?
+  zipCode           String
+  latitude          Int
+  longitude         Int
+  address           String
+  number            String
+  complement        String?
+  referencePoint    String?
+  wifi              Boolean?
+  kid               Boolean?
+  accessibility     Boolean?
+  parking           Boolean?
+  tv                Boolean?
+  debitCard         Boolean?
+  creditCard        Boolean?
+  cash              Boolean?
+  pix               Boolean?
+  otherPaymentTypes String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  salon                   Salon                     @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  OpeningHour             OpeningHour[]
+  LocationHasProfessional LocationHasProfessional[]
+  LocationHasService      LocationHasService[]
+  Scheduling              Scheduling[]
+}
+
+model OpeningHour {
+  id                    Int     @id @default(autoincrement())
+  locationId            Int
+  sundayOpeningHours    String?
+  sundayClosingHours    String?
+  mondayOpeningHours    String?
+  mondayClosingHours    String?
+  tuesdayOpeningHours   String?
+  tuesdayClosingHours   String?
+  wednesdayOpeningHours String?
+  wednesdayClosingHours String?
+  thursdayOpeningHours  String?
+  thursdayClosingHours  String?
+  fridayOpeningHours    String?
+  fridayClosingHours    String?
+  saturdayOpeningHours  String?
+  saturdayClosingHours  String?
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+}
+
+model Gender {
+  id       Int        @id @default(autoincrement())
+  name     String
+  Customer Customer[]
+}
+
+model Customer {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String?
+  phone     String?
+  password  String?
+  birthday  DateTime?
+  avatarUrl String?
+  genderId  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+
+  gender     Gender?      @relation(fields: [genderId], references: [id], onDelete: Cascade)
+  Scheduling Scheduling[]
+}
+
+model Professional {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  password  String?
+  avatarUrl String?
+  bio       String?
+  phone     String?
+  online    Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  SalonHasProfessional    SalonHasProfessional[]
+  LocationHasProfessional LocationHasProfessional[]
+  ProfessionalHasService  ProfessionalHasService[]
+  Scheduling              Scheduling[]
+}
+
+model SalonHasProfessional {
+  salonId        String
+  professionalId String
+  isAdmin        Boolean
+  active         Boolean
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now())
+
+  salon        Salon        @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@id([salonId, professionalId])
+}
+
+model LocationHasProfessional {
+  locationId           Int
+  professionalId       String
+  commissionPercentage Int?
+
+  location     Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@id([locationId, professionalId])
+}
+
+model Service {
+  id               Int      @id @default(autoincrement())
+  salonId          String
+  title            String
+  description      String?
+  price            Float
+  promocionalPrice Float?
+  minutes          Int
+  imageUrl         String?
+  active           Boolean
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+
+  salon                  Salon                    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  LocationHasService     LocationHasService[]
+  ProfessionalHasService ProfessionalHasService[]
+  Scheduling             Scheduling[]
+}
+
+model LocationHasService {
+  locationId       Int
+  serviceId        Int
+  price            Float?
+  promocionalPrice Float?
+  disabled         Boolean
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([locationId, serviceId])
+}
+
+model ProfessionalHasService {
+  professionalId String
+  serviceId      Int
+  disabled       Boolean
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([professionalId, serviceId])
+}
+
+model Scheduling {
+  id              String   @id @default(uuid())
+  customerId      Int
+  locationId      Int
+  serviceId       Int
+  professionalId  String
+  datetime        DateTime
+  observation     String?
+  canceled        Boolean
+  customizedPrice Float?
+  rating          Int
+  ratingReason    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  customer     Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  location     Location     @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+model Frequency {
+  id       Int        @id @default(autoincrement())
+  type     String
+  Invoices Invoices[]
+}
+
+model Gateway {
+  id        Int        @id @default(autoincrement())
+  title     String
+  name      String
+  active    Boolean
+  Invoices  Invoices[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+}
+
+model PaymentType {
+  id       Int        @id @default(autoincrement())
+  title    String
+  name     String
+  active   Boolean
+  Invoices Invoices[]
+}
+
+model PaymentStatus {
+  id       Int        @id @default(autoincrement())
+  title    String
+  name     String
+  active   Boolean
+  Invoices Invoices[]
+}
+
+model Invoices {
+  id               String    @id @default(uuid())
+  salonId          String
+  planCountryId    Int
+  frequencyId      Int
+  paymentStatusId  Int
+  paymentTypeId    Int?
+  cardId           String?
+  transactionId    Int?
+  gatewayId        Int?
+  installments     Int?
+  paidAt           DateTime?
+  gatewayPayload   Json?
+  history          Json?
+  refundReceiptUrl String?
+  nfeUrl           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now())
+
+  salon         Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  planCountry   PlanCountry   @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  frequency     Frequency     @relation(fields: [frequencyId], references: [id], onDelete: Cascade)
+  paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id], onDelete: Cascade)
+  paymentType   PaymentType?  @relation(fields: [paymentTypeId], references: [id], onDelete: Cascade)
+  card          Card?         @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  gateway       Gateway?      @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
 }
