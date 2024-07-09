@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Manager {
+  id        Int     @id @default(autoincrement())
+  userName  String
+  email     String
+  password  String
+  avatarUrl String?
+}
+
+model Plan {
+  id                Int           @id @default(autoincrement())
+  name              String
+  maxProfessionals  Int
+  description       String
+  multipleLocations Boolean
+  trialMonths       Int
+  pixDiscount       Int
+  PlanCountry       PlanCountry[]
+}
+
+model PlanCountry {
+  id                       Int     @id @default(autoincrement())
+  planId                   Int
+  name                     String
+  code                     Int
+  currency                 String
+  monthlyPrice             Float
+  monthlyPromotionalPrice  Float?
+  quaterlyPrice            Float
+  quaterlyPromotionalPrice Float?
+  yearlyPrice              Float
+  yearlyPromotionalPrice   Float?
+  monthlyPricePerUser      Float
+  quaterlyPricePerUser     Float
+  yearlyPricePerUser       Float
+  active                   Boolean
+
+  plan  Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  Salon Salon[]
+}
+
+model Card {
+  id              String  @id @default(cuid())
+  number          Int
+  expirationMonth Int
+  expirationYear  Int
+  cvv             Int
+  debit           Boolean
+  Salon           Salon[]
+}
+
+model Salon {
+  id                  String   @id @default(cuid())
+  planCountryId       Int
+  cardIdForRecurrence String?
+  name                String
+  slug                String
+  cnpj                String?
+  cpf                 String?
+  description         String?
+  cancellationPolicy  String?
+  active              Boolean
+  percentageDiscount  Int
+  instagram           String?
+  tiktok              String?
+  facebook            String?
+  block               Boolean
+  blockReason         String?
+  recurrence          Boolean
+  planExpirationDate  DateTime
+
+  planCountry PlanCountry @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+
+  cardForRecurrence Card? @relation(fields: [cardIdForRecurrence], references: [id], onDelete: Cascade)
+}
