@@ -15,8 +15,8 @@ datasource db {
 
 model Manager {
   id        Int      @id @default(autoincrement())
-  userName  String
-  email     String
+  userName  String   @unique
+  email     String   @unique
   password  String
   avatarUrl String?
   createdAt DateTime @default(now())
@@ -25,10 +25,11 @@ model Manager {
 
 model Plan {
   id                Int           @id @default(autoincrement())
-  name              String
+  name              String        @unique
   maxProfessionals  Int
   description       String
   multipleLocations Boolean
+  maxLocations      Int?
   trialMonths       Int
   pixDiscount       Int
   PlanCountry       PlanCountry[]
@@ -39,8 +40,8 @@ model Plan {
 model PlanCountry {
   id                       Int      @id @default(autoincrement())
   planId                   Int
-  name                     String
-  code                     Int
+  name                     String   @unique
+  code                     Int      @unique
   currency                 String
   monthlyPrice             Float
   monthlyPromotionalPrice  Float?
@@ -81,8 +82,8 @@ model Salon {
   planCountryId       Int
   cardIdForRecurrence String?
   name                String
-  slug                String
-  cnpj                String?
+  slug                String    @unique
+  cnpj                String?   @unique
   cpf                 String?
   holder              String?
   description         String?
@@ -91,7 +92,7 @@ model Salon {
   percentageDiscount  Int
   logoUrl             String?
   coverUrl            String?
-  phone               String?
+  phone               String?   @unique
   instagram           String?
   tiktok              String?
   facebook            String?
@@ -120,6 +121,8 @@ model SalonMedia {
   createdAt DateTime @default(now())
 
   salon Salon @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@unique([salonId, order])
 }
 
 model Location {
@@ -155,6 +158,8 @@ model Location {
   LocationHasProfessional LocationHasProfessional[]
   LocationHasService      LocationHasService[]
   Scheduling              Scheduling[]
+
+  @@unique([zipCode, number])
 }
 
 model OpeningHour {
@@ -180,15 +185,15 @@ model OpeningHour {
 
 model Gender {
   id       Int        @id @default(autoincrement())
-  name     String
+  name     String     @unique
   Customer Customer[]
 }
 
 model Customer {
   id        Int       @id @default(autoincrement())
   name      String
-  email     String?
-  phone     String?
+  email     String?   @unique
+  phone     String?   @unique
   password  String?
   birthday  DateTime?
   avatarUrl String?
@@ -203,11 +208,11 @@ model Customer {
 model Professional {
   id        String   @id @default(cuid())
   name      String
-  email     String
+  email     String   @unique
   password  String?
   avatarUrl String?
   bio       String?
-  phone     String?
+  phone     String?  @unique
   online    Boolean
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
@@ -260,6 +265,8 @@ model Service {
   LocationHasService     LocationHasService[]
   ProfessionalHasService ProfessionalHasService[]
   Scheduling             Scheduling[]
+
+  @@unique([salonId, title])
 }
 
 model LocationHasService {
@@ -276,9 +283,10 @@ model LocationHasService {
 }
 
 model ProfessionalHasService {
-  professionalId String
-  serviceId      Int
-  disabled       Boolean
+  professionalId       String
+  serviceId            Int
+  commissionPercentage Int?
+  disabled             Boolean
 
   professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   service      Service      @relation(fields: [serviceId], references: [id], onDelete: Cascade)
@@ -309,14 +317,14 @@ model Scheduling {
 
 model Frequency {
   id       Int        @id @default(autoincrement())
-  type     String
+  type     String     @unique
   Invoices Invoices[]
 }
 
 model Gateway {
   id        Int        @id @default(autoincrement())
-  title     String
-  name      String
+  title     String     @unique
+  name      String     @unique
   active    Boolean
   Invoices  Invoices[]
   createdAt DateTime   @default(now())
@@ -325,16 +333,16 @@ model Gateway {
 
 model PaymentType {
   id       Int        @id @default(autoincrement())
-  title    String
-  name     String
+  title    String     @unique
+  name     String     @unique
   active   Boolean
   Invoices Invoices[]
 }
 
 model PaymentStatus {
   id       Int        @id @default(autoincrement())
-  title    String
-  name     String
+  title    String     @unique
+  name     String     @unique
   active   Boolean
   Invoices Invoices[]
 }
