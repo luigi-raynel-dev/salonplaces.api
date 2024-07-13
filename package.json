@@ -1,7 +1,7 @@
 {
-  "name": "salonplace",
+  "name": "salonplaces",
   "version": "0.0.1",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "tsx watch src/server.ts",
     "backend": "node dist/server.js",
