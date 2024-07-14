@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import fastifyEnv from '@fastify/env'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
+import { planRoutes } from './routes/plan'
 
 const schema = {
   type: 'object',
@@ -49,6 +50,8 @@ async function bootstrap() {
         message: 'pong'
       })
     })
+
+    await fastify.register(planRoutes)
 
     const port = Number(process.env.FASTIFY_PORT) || 3333
 
