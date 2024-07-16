@@ -48,4 +48,45 @@ export async function planRoutes(fastify: FastifyInstance) {
 
     return { plans }
   })
+
+  fastify.get('/plans/:id', async (request, reply) => {
+    const queryParams = z.object({
+      id: z.string()
+    })
+    const { id } = queryParams.parse(request.params)
+
+    const queryScheme = z.object({
+      countryIsoCode: z.string().nullable().optional()
+    })
+
+    const { countryIsoCode } = queryScheme.parse(request.query)
+
+    const plan = await prisma.plan.findUnique({
+      include: {
+        CountryPlan: {
+          include: {
+            country: {
+              include: {
+                language: true,
+                currency: true
+              }
+            }
+          },
+          where: {
+            active: true,
+            country: !countryIsoCode
+              ? undefined
+              : {
+                  isoCode: {
+                    equals: countryIsoCode
+                  }
+                }
+          }
+        }
+      },
+      where: { id: parseInt(id) }
+    })
+
+    return plan ? { plan } : reply.status(404).send()
+  })
 }
