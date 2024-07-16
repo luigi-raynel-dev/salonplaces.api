@@ -2,8 +2,9 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { Prisma } from '@prisma/client'
-import { getHash, tokenGenerator } from '../modules/auth'
+import { getHash, JWTPayload, tokenGenerator } from '../modules/auth'
 import { compareSync } from 'bcrypt'
+import { authenticate } from '../plugins/authenticate'
 
 export async function professionalRoutes(fastify: FastifyInstance) {
   fastify.post('/signUp', async (request, reply) => {
@@ -90,4 +91,60 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       }
     }
   })
+
+  fastify.get(
+    '/profile',
+    {
+      onRequest: [authenticate]
+    },
+    async request => {
+      const { email } = request.user as JWTPayload
+
+      const professional = await prisma.professional.findUniqueOrThrow({
+        where: { email }
+      })
+
+      return {
+        professional: {
+          ...professional,
+          password: undefined
+        }
+      }
+    }
+  )
+
+  fastify.patch(
+    '/profile',
+    {
+      onRequest: [authenticate]
+    },
+    async request => {
+      const { email } = request.user as JWTPayload
+
+      let professional = await prisma.professional.findUniqueOrThrow({
+        where: { email }
+      })
+
+      const bodyScheme = z.object({
+        name: z.string(),
+        bio: z.string().nullable().optional(),
+        phone: z.string().nullable().optional()
+      })
+      const data = bodyScheme.parse(request.body)
+
+      professional = await prisma.professional.update({
+        data,
+        where: { email }
+      })
+
+      return {
+        status: true,
+        message: 'Professional profile was successfully updated!',
+        professional: {
+          ...professional,
+          password: undefined
+        }
+      }
+    }
+  )
 }
