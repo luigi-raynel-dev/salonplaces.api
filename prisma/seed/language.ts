@@ -6,7 +6,7 @@ export const createInitialLanguages = async (prisma: PrismaClient) => {
       data: {
         title: 'Português - BR',
         universalTitle: 'Portuguese - BR',
-        isoCode: 'pt-br'
+        isoCode: 'pt-BR'
       }
     },
     {

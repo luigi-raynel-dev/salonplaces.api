@@ -2,7 +2,7 @@ import { Prisma, PrismaClient } from '@prisma/client'
 
 export const createInitialCountries = async (prisma: PrismaClient) => {
   const ptBr = await prisma.language.findUniqueOrThrow({
-    where: { isoCode: 'pt-br' }
+    where: { isoCode: 'pt-BR' }
   })
   const brl = await prisma.currency.findUniqueOrThrow({
     where: { code: 'BRL' }
