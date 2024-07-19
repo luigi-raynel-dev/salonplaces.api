@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Manager {
+model Staff {
   id        Int      @id @default(autoincrement())
   userName  String   @unique
   email     String   @unique
@@ -23,26 +23,59 @@ model Manager {
   updatedAt DateTime @default(now())
 }
 
-model Plan {
-  id                Int           @id @default(autoincrement())
-  name              String        @unique
-  maxProfessionals  Int
-  description       String
-  multipleLocations Boolean
-  maxLocations      Int?
-  trialMonths       Int
-  pixDiscount       Int
-  PlanCountry       PlanCountry[]
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @default(now())
+model Language {
+  id             Int       @id @default(autoincrement())
+  title          String    @unique
+  universalTitle String    @unique
+  isoCode        String    @unique
+  Country        Country[]
 }
 
-model PlanCountry {
+model Currency {
+  id      Int       @id @default(autoincrement())
+  title   String    @unique
+  code    String    @unique
+  symbol  String
+  Country Country[]
+}
+
+model Country {
+  id            Int    @id @default(autoincrement())
+  name          String @unique
+  universalName String @unique
+  isoCode       String @unique
+  callingCode   String @unique
+  languageId    Int
+  currencyId    Int
+
+  language    Language      @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  currency    Currency      @relation(fields: [currencyId], references: [id], onDelete: Cascade)
+  CountryPlan CountryPlan[]
+}
+
+model Plan {
+  id                 Int           @id @default(autoincrement())
+  name               String        @unique
+  level              Int
+  recommended        Boolean
+  exclusive          Boolean
+  professionalsQuota Int?
+  maxProfessionals   Int?
+  description        String
+  multipleLocations  Boolean
+  maxLocations       Int?
+  daysTrial          Int?
+  pixDiscount        Int
+  CountryPlan        CountryPlan[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @default(now())
+}
+
+model CountryPlan {
   id                       Int      @id @default(autoincrement())
+  countryId                Int
   planId                   Int
-  name                     String   @unique
-  code                     Int      @unique
-  currency                 String
+  customDescription        String?
   monthlyPrice             Float
   monthlyPromotionalPrice  Float?
   quaterlyPrice            Float
@@ -56,6 +89,7 @@ model PlanCountry {
   createdAt                DateTime @default(now())
   updatedAt                DateTime @default(now())
 
+  country  Country    @relation(fields: [countryId], references: [id], onDelete: Cascade)
   plan     Plan       @relation(fields: [planId], references: [id], onDelete: Cascade)
   Salon    Salon[]
   Invoices Invoices[]
@@ -86,6 +120,7 @@ model Salon {
   cnpj                String?   @unique
   cpf                 String?
   holder              String?
+  quotaProfessionals  Int?
   description         String?
   cancellationPolicy  String?
   active              Boolean
@@ -103,7 +138,7 @@ model Salon {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @default(now())
 
-  planCountry          PlanCountry            @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  planCountry          CountryPlan            @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
   Card                 Card[]
   SalonMedia           SalonMedia[]
   Location             Location[]
@@ -367,7 +402,7 @@ model Invoices {
   updatedAt        DateTime  @default(now())
 
   salon         Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
-  planCountry   PlanCountry   @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  planCountry   CountryPlan   @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
   frequency     Frequency     @relation(fields: [frequencyId], references: [id], onDelete: Cascade)
   paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id], onDelete: Cascade)
   paymentType   PaymentType?  @relation(fields: [paymentTypeId], references: [id], onDelete: Cascade)
