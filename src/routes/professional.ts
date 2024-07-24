@@ -5,15 +5,26 @@ import { Prisma } from '@prisma/client'
 import { getHash, JWTPayload, tokenGenerator } from '../modules/auth'
 import { compareSync } from 'bcrypt'
 import { authenticate } from '../plugins/authenticate'
+import { sendMail } from '../lib/nodemailer'
+import { emailTemplate } from '../modules/emailTemplate'
+import { languageIsonCodeType, translate } from '../modules/translate'
 
 export async function professionalRoutes(fastify: FastifyInstance) {
   fastify.post('/signUp', async (request, reply) => {
     const bodyScheme = z.object({
       name: z.string().min(3),
       email: z.string().email(),
-      password: z.string().min(6)
+      password: z.string().min(6),
+      langIsoCode: z.string().min(2).optional()
     })
-    const { name, email, password } = bodyScheme.parse(request.body)
+    const { name, email, password, langIsoCode } = bodyScheme.parse(
+      request.body
+    )
+
+    let languageIsoCode: languageIsonCodeType = 'en'
+    if (langIsoCode) {
+      languageIsoCode = langIsoCode as languageIsonCodeType
+    }
 
     let professional = await prisma.professional.findUnique({
       where: { email }
@@ -42,6 +53,28 @@ export async function professionalRoutes(fastify: FastifyInstance) {
         })
       : await prisma.professional.create({ data })
 
+    const emailInfo = await sendMail({
+      to: email,
+      subject: `Welcome ${name} to ${process.env.APP_NAME} - Professionals! `,
+      html: emailTemplate(
+        'You was successfully registered!',
+        `
+          <p>${translate(languageIsoCode, 'registeredProfessionalSubtitle')}</p>
+          <p>${translate(languageIsoCode, 'professionalCTABtn')}</p>
+          <a href="${
+            process.env.APP_PROFILE_URL
+          }" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
+          ${translate(
+            languageIsoCode,
+            'professionalProfileCompleteLabelButton'
+          )}</a>
+          <p>${translate(languageIsoCode, 'professionalWelcomeAboard')}</p>
+        `,
+        undefined,
+        languageIsoCode
+      )
+    })
+
     return reply.status(201).send({
       status: true,
       message: 'Professional was successfully registered!',
@@ -49,7 +82,8 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       professional: {
         ...professional,
         password: undefined
-      }
+      },
+      emailInfo
     })
   })
 

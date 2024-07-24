@@ -1,11 +1,13 @@
 import translations, { translationKeywords } from '../translations'
 
-export const getLanguage = (language: keyof typeof translations) => {
+export type languageIsonCodeType = keyof typeof translations
+
+export const getLanguage = (language: languageIsonCodeType) => {
   return translations[language]
 }
 
 export const translate = (
-  language: keyof typeof translations,
+  language: languageIsonCodeType,
   keyword: keyof translationKeywords
 ) => {
   return translations[language][keyword] || ''
