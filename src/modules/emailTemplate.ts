@@ -3,8 +3,8 @@ import { languageIsonCodeType, translate } from './translate'
 export function emailTemplate(
   title: string,
   body: string,
-  introduction?: string,
-  language: languageIsonCodeType = 'en'
+  username?: string,
+  introduction?: string
 ) {
   return `
     <!DOCTYPE html>
@@ -19,12 +19,11 @@ export function emailTemplate(
         <h2>${process.env.APP_NAME} - ${title}</h2>
       </div>
       <div style="padding: 8px">
-        <h3>${introduction || `${translate(language, 'hello')},`}</h3>
+        <h3>${introduction || `${translate('hello', { username })},`}</h3>
         ${body}
       </div>
       </div>
       <p style="color: #071673; text-align: center">${translate(
-        language,
         'automaticEmailMessage'
       )}</p>
     </body>

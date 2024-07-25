@@ -1,7 +1,7 @@
 import { translationKeywords } from '.'
 
 const language: translationKeywords = {
-  hello: 'Olá',
+  hello: userName => (userName ? `Olá ${userName}` : 'Olá'),
   automaticEmailMessage:
     'Este é um e-mail automático. Por favor não responda-o.',
   registeredProfessionalSubtitle:
@@ -9,7 +9,11 @@ const language: translationKeywords = {
   professionalCTABtn:
     'Clique no botão abaixo para completar seu perfil e começar a atrair e gerenciar clientes:',
   professionalProfileCompleteLabelButton: 'Completar seu perfil',
-  professionalWelcomeAboard: 'Estamos aqui pelo seu sucesso!'
+  professionalWelcome: `Boas-vindas ao ${process.env.APP_NAME} para profissionais!`,
+  professionalWelcomeAboard: 'Estamos aqui pelo seu sucesso!',
+  professionalSuccessfullyRegistered: 'Cadastro realizado com sucesso!',
+  professionalAlreadyExists: 'Profissional já está cadastrado.',
+  invalidUserOrPassword: 'Usuário ou senha inválida.'
 }
 
 export default language
