@@ -4,6 +4,8 @@ import ptBr from './pt-br'
 export type translationKeywords = {
   hello: (props: { username: string }) => string
   automaticEmailMessage: string
+  invalidUserOrPassword: string
+  userAlreadyExists: string
   registeredProfessionalSubtitle: string
   professionalCTABtn: string
   professionalProfileCompleteLabelButton: string
@@ -11,7 +13,6 @@ export type translationKeywords = {
   professionalWelcomeAboard: string
   professionalSuccessfullyRegistered: string
   professionalAlreadyExists: string
-  invalidUserOrPassword: string
 }
 
 export default {

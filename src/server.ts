@@ -5,6 +5,7 @@ import jwt from '@fastify/jwt'
 import { planRoutes } from './routes/plan'
 import { professionalRoutes } from './routes/professional'
 import { setLanguage } from './plugins/setLanguage'
+import { userRoutes } from './routes/user'
 
 const schema = {
   type: 'object',
@@ -55,7 +56,8 @@ async function bootstrap() {
       })
     })
 
-    await fastify.register(planRoutes)
+    await fastify.register(planRoutes, { prefix: '/plans' })
+    await fastify.register(userRoutes)
     await fastify.register(professionalRoutes, { prefix: '/professionals' })
 
     const port = Number(process.env.FASTIFY_PORT) || 3333

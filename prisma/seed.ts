@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { createInitialFrequencies } from './seed/frequency'
-import { createInitialStaffs } from './seed/staff'
+import { createInitialUsers } from './seed/user'
 import { createInitialLanguages } from './seed/language'
 import { createInitialCurrencies } from './seed/currency'
 import { createInitialCountries } from './seed/country'
@@ -16,7 +16,7 @@ async function run() {
   try {
     await createInitialFrequencies(prisma)
     await createInitialGenders(prisma)
-    await createInitialStaffs(prisma)
+    await createInitialUsers(prisma)
     await createInitialLanguages(prisma)
     await createInitialCurrencies(prisma)
     await createInitialCountries(prisma)

@@ -3,6 +3,7 @@ import { translationKeywords } from '.'
 const language: translationKeywords = {
   hello: userName => (userName ? `Hello ${userName}` : 'Hello'),
   automaticEmailMessage: "This is an automatic email. Please don't reply it.",
+  userAlreadyExists: 'User is already registered.',
   registeredProfessionalSubtitle:
     "We're so excited to have you join our awesome platform of professionals. To help you get started and make sure clients can easily find and book your services, we suggest you complete your profile.",
   professionalCTABtn:

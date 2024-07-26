@@ -3,7 +3,7 @@ import { prisma } from '../lib/prisma'
 import { z } from 'zod'
 
 export async function planRoutes(fastify: FastifyInstance) {
-  fastify.get('/plans', async request => {
+  fastify.get('/', async request => {
     const queryScheme = z.object({
       countryIsoCode: z.string().nullable().optional()
     })
@@ -49,7 +49,7 @@ export async function planRoutes(fastify: FastifyInstance) {
     return { plans }
   })
 
-  fastify.get('/plans/:id', async (request, reply) => {
+  fastify.get('/:id', async (request, reply) => {
     const queryParams = z.object({
       id: z.string()
     })
