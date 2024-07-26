@@ -4,6 +4,7 @@ import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import { planRoutes } from './routes/plan'
 import { professionalRoutes } from './routes/professional'
+import { setLanguage } from './plugins/setLanguage'
 
 const schema = {
   type: 'object',
@@ -35,6 +36,8 @@ async function bootstrap() {
 
   try {
     await fastify.register(fastifyEnv, options)
+
+    fastify.addHook('onRequest', setLanguage)
 
     await fastify.register(cors, {
       origin: true

@@ -5,13 +5,17 @@ import { Prisma } from '@prisma/client'
 import { getHash, JWTPayload, tokenGenerator } from '../modules/auth'
 import { compareSync } from 'bcrypt'
 import { authenticate } from '../plugins/authenticate'
+import { sendMail } from '../lib/nodemailer'
+import { emailTemplate } from '../modules/emailTemplate'
+import { translate } from '../modules/translate'
 
 export async function professionalRoutes(fastify: FastifyInstance) {
   fastify.post('/signUp', async (request, reply) => {
     const bodyScheme = z.object({
       name: z.string().min(3),
       email: z.string().email(),
-      password: z.string().min(6)
+      password: z.string().min(6),
+      langIsoCode: z.string().min(2).optional()
     })
     const { name, email, password } = bodyScheme.parse(request.body)
 
@@ -22,7 +26,7 @@ export async function professionalRoutes(fastify: FastifyInstance) {
     if (professional && professional.password)
       return reply.status(401).send({
         status: false,
-        message: 'User is already registered.',
+        message: translate('professionalAlreadyExists'),
         error: 'USER_ALREADY_EXISTS'
       })
 
@@ -42,14 +46,33 @@ export async function professionalRoutes(fastify: FastifyInstance) {
         })
       : await prisma.professional.create({ data })
 
+    const emailInfo = await sendMail({
+      to: email,
+      subject: translate('professionalWelcome'),
+      html: emailTemplate(
+        translate('professionalSuccessfullyRegistered'),
+        `
+          <p>${translate('registeredProfessionalSubtitle')}</p>
+          <p>${translate('professionalCTABtn')}</p>
+          <a href="${
+            process.env.APP_PROFILE_URL
+          }" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
+          ${translate('professionalProfileCompleteLabelButton')}</a>
+          <p>${translate('professionalWelcomeAboard')}</p>
+        `,
+        name
+      )
+    })
+
     return reply.status(201).send({
       status: true,
-      message: 'Professional was successfully registered!',
+      message: translate('professionalSuccessfullyRegistered'),
       professional_token: tokenGenerator({ email }, fastify),
       professional: {
         ...professional,
         password: undefined
-      }
+      },
+      emailInfo
     })
   })
 
@@ -67,23 +90,19 @@ export async function professionalRoutes(fastify: FastifyInstance) {
     if (!professional || !professional.password)
       return reply.status(401).send({
         status: false,
-        message: 'Incomplete registration.',
-        error:
-          professional && !professional.password
-            ? 'INCOMPLETE_REGISTRATION'
-            : 'USER_NOT_FOUND'
+        message: translate('invalidUserOrPassword'),
+        error: 'USER_NOT_FOUND'
       })
 
     if (!compareSync(password, professional.password || ''))
       return reply.status(401).send({
         status: false,
-        message: 'Invalid password.',
+        message: translate('invalidUserOrPassword'),
         error: 'INVALID_PASSWORD'
       })
 
     return {
       status: true,
-      message: 'Professional was successfully authenticated!',
       professional_token: tokenGenerator({ email }, fastify),
       professional: {
         ...professional,
@@ -139,7 +158,6 @@ export async function professionalRoutes(fastify: FastifyInstance) {
 
       return {
         status: true,
-        message: 'Professional profile was successfully updated!',
         professional: {
           ...professional,
           password: undefined

@@ -7,7 +7,15 @@ export type CallbackSendMail = (
   info: SMTPTransport.SentMessageInfo
 ) => void
 
-export const sendMail = async (mailOptions: MailOptions) => {
+export type SendMailProps = {
+  status: boolean
+  error: Error | null
+  info: SMTPTransport.SentMessageInfo
+}
+
+export const sendMail = async (
+  mailOptions: MailOptions
+): Promise<SendMailProps> => {
   return new Promise(resolve => {
     const transporter = createTransport({
       host: process.env.SMTP_HOST || 'localhost',
