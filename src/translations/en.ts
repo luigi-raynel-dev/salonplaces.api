@@ -1,7 +1,7 @@
 import { translationKeywords } from '.'
 
 const language: translationKeywords = {
-  hello: userName => (userName ? `Hello ${userName}` : 'Hello'),
+  hello: ({ username }) => (username ? `Hello ${username}` : 'Hello'),
   automaticEmailMessage: "This is an automatic email. Please don't reply it.",
   userAlreadyExists: 'User is already registered.',
   registeredProfessionalSubtitle:
