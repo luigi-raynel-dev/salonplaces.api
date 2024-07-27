@@ -37,6 +37,7 @@ model User {
   Staff        Staff[]
   Customer     Customer?
   Professional Professional?
+  UserCode     UserCode[]
 }
 
 model Staff {
@@ -418,4 +419,26 @@ model Invoices {
   paymentType   PaymentType?  @relation(fields: [paymentTypeId], references: [id], onDelete: Cascade)
   card          Card?         @relation(fields: [cardId], references: [id], onDelete: Cascade)
   gateway       Gateway?      @relation(fields: [gatewayId], references: [id], onDelete: Cascade)
+}
+
+model CodeRequestType {
+  id        String     @id @default(uuid())
+  slug      String     @unique
+  title     String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+  UserCode  UserCode[]
+}
+
+model UserCode {
+  id                String    @id @default(uuid())
+  userId            Int
+  codeRequestTypeId String
+  code              String
+  validatedIn       DateTime?
+  expiresIn         DateTime
+  createdAt         DateTime  @default(now())
+
+  CodeRequestType CodeRequestType @relation(fields: [codeRequestTypeId], references: [id])
+  user            User            @relation(fields: [userId], references: [id])
 }

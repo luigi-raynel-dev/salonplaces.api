@@ -9,6 +9,7 @@ import { createInitialGateways } from './seed/gateway'
 import { createInitialPaymentStatus } from './seed/paymentStatus'
 import { createInitialPaymentTypes } from './seed/paymentType'
 import { createInitialGenders } from './seed/gender'
+import { createInitialCodeRequestTypes } from './seed/codeRequestType'
 
 const prisma = new PrismaClient()
 
@@ -24,6 +25,7 @@ async function run() {
     await createInitialPaymentStatus(prisma)
     await createInitialPaymentTypes(prisma)
     await createInitialGateways(prisma)
+    await createInitialCodeRequestTypes(prisma)
   } catch (error) {
     console.error('Error during seeding:', error)
   } finally {

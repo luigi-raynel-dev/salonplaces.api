@@ -3,9 +3,10 @@ import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { Prisma, User } from '@prisma/client'
 import { getHash, JWTPayload, tokenGenerator } from '../modules/auth'
-import { compareSync } from 'bcrypt'
+import { compareSync, genSaltSync, hashSync } from 'bcrypt'
 import { authenticate } from '../plugins/authenticate'
 import { translate } from '../modules/translate'
+import { sendCode, validateCode } from '../modules/userCode'
 
 const authReply = (user: User, fastify: FastifyInstance) => {
   return {
@@ -142,6 +143,88 @@ export async function userRoutes(fastify: FastifyInstance) {
           password: undefined
         }
       }
+    }
+  )
+
+  fastify.post('/password-recovery', async request => {
+    const bodyScheme = z.object({
+      email: z.string().email()
+    })
+    const { email } = bodyScheme.parse(request.body)
+
+    let user = await prisma.user.findUnique({
+      where: { email }
+    })
+    if (!user || !user.password)
+      return {
+        status: false,
+        message: translate('USER_NOT_FOUND'),
+        error: 'USER_NOT_FOUND'
+      }
+
+    const action = translate('PASSWORD_RECOVERY')
+    const emailResponse = await sendCode(
+      user,
+      translate('CODE_REQUEST', { action }),
+      action,
+      'password-recovery'
+    )
+
+    return emailResponse
+  })
+
+  fastify.post('/validate-code', async request => {
+    const bodyScheme = z.object({
+      code: z.string(),
+      email: z.string().email()
+    })
+
+    const { code, email } = bodyScheme.parse(request.body)
+
+    let user = await prisma.user.findUnique({
+      where: { email }
+    })
+
+    if (!user || !user.password)
+      return {
+        status: false,
+        message: translate('USER_NOT_FOUND'),
+        error: 'USER_NOT_FOUND'
+      }
+
+    const userCode = await validateCode(user.id, code)
+
+    return {
+      status: userCode !== null,
+      token: userCode ? tokenGenerator({ email }, fastify) : undefined,
+      user: !userCode
+        ? undefined
+        : {
+            ...user,
+            password: undefined
+          }
+    }
+  })
+
+  fastify.patch(
+    '/password',
+    {
+      onRequest: [authenticate]
+    },
+    async request => {
+      const bodyScheme = z.object({
+        password: z.string().min(6)
+      })
+      const { password } = bodyScheme.parse(request.body)
+      const { email } = request.user as JWTPayload
+      const hash = hashSync(password, genSaltSync())
+
+      await prisma.user.update({
+        data: { password: hash },
+        where: { email }
+      })
+
+      return { status: true }
     }
   )
 }

@@ -1,8 +1,17 @@
 import { translationKeywords } from '.'
 
 const language: translationKeywords = {
+  DAY: 'dia',
+  DAYS: 'dias',
+  HOUR: 'hora',
+  HOURS: 'horas',
+  MINUTE: 'minuto',
+  MINUTES: 'minutos',
+  SECOND: 'segundo',
+  SECONDS: 'segundos',
   HELLO: ({ username }) => (username ? `Olá ${username}` : 'Olá'),
   USER_ALREADY_EXISTS: 'Usuário já está cadastrado.',
+  USER_NOT_FOUND: 'Usuário não encontrado.',
   AUTOMATIC_EMAIL_MESSAGE:
     'Este é um e-mail automático. Por favor não responda-o.',
   REGISTERED_PROFESSIONAL_SUBTITLE:
@@ -14,7 +23,16 @@ const language: translationKeywords = {
   PROFESSIONAL_WELCOME_ABOARD: 'Estamos aqui pelo seu sucesso!',
   PROFESSIONAL_SUCCESSFULY_REGISTERED: 'Cadastro realizado com sucesso!',
   PROFESSIONAL_ALREADY_EXISTS: 'Profissional já está cadastrado.',
-  INVALID_USER_OR_PASSWORD: 'Usuário ou senha inválida.'
+  INVALID_USER_OR_PASSWORD: 'Usuário ou senha inválida.',
+  CODE_EXPIRATION: ({ expiration }) =>
+    `Este código expira em ${expiration}, caso expirado será necessário solicitar um novo.`,
+  RECEIVED_REQUEST: ({ action }) => `Recebemos uma solicitação para ${action}.`,
+  IGNORE_EMAIL: ({ action }) =>
+    `Se você não solicitou a ${action}, ignore este e-mail.`,
+  USE_THIS_CODE: ({ action }) =>
+    `Por favor, utilize este código acima para confirmar a ${action} no nossa plataforma.`,
+  CODE_REQUEST: ({ action }) => `Código para ${action}`,
+  PASSWORD_RECOVERY: 'redefinição da senha'
 }
 
 export default language
