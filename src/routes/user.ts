@@ -37,8 +37,8 @@ export async function userRoutes(fastify: FastifyInstance) {
     if (user && user.password)
       return reply.status(401).send({
         status: false,
-        message: translate('userAlreadyExists'),
-        error: 'userAlreadyExists'
+        message: translate('USER_ALREADY_EXISTS'),
+        error: 'USER_ALREADY_EXISTS'
       })
 
     const hash = getHash(password)
@@ -74,15 +74,15 @@ export async function userRoutes(fastify: FastifyInstance) {
     if (!user || !user.password)
       return reply.status(401).send({
         status: false,
-        message: translate('invalidUserOrPassword'),
+        message: translate('INVALID_USER_OR_PASSWORD'),
         error: 'userNotFound'
       })
 
     if (!compareSync(password, user.password || ''))
       return reply.status(401).send({
         status: false,
-        message: translate('invalidUserOrPassword'),
-        error: 'invalidUserOrPassword'
+        message: translate('INVALID_USER_OR_PASSWORD'),
+        error: 'INVALID_USER_OR_PASSWORD'
       })
 
     return authReply(user, fastify)

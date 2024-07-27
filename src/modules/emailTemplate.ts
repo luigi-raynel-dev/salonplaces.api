@@ -19,12 +19,12 @@ export function emailTemplate(
         <h2>${process.env.APP_NAME} - ${title}</h2>
       </div>
       <div style="padding: 8px">
-        <h3>${introduction || `${translate('hello', { username })},`}</h3>
+        <h3>${introduction || `${translate('HELLO', { username })},`}</h3>
         ${body}
       </div>
       </div>
       <p style="color: #071673; text-align: center">${translate(
-        'automaticEmailMessage'
+        'AUTOMATIC_EMAIL_MESSAGE'
       )}</p>
     </body>
     </html>

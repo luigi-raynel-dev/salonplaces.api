@@ -29,8 +29,8 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       if (professional)
         return reply.status(400).send({
           status: false,
-          message: translate('professionalAlreadyExists'),
-          error: 'professionalAlreadyExists'
+          message: translate('PROFESSIONAL_ALREADY_EXISTS'),
+          error: 'PROFESSIONAL_ALREADY_EXISTS'
         })
 
       professional = await prisma.professional.create({
@@ -42,17 +42,17 @@ export async function professionalRoutes(fastify: FastifyInstance) {
 
       const emailInfo = await sendMail({
         to: email,
-        subject: translate('professionalWelcome'),
+        subject: translate('PROFESSIONAL_WELCOME'),
         html: emailTemplate(
-          translate('professionalSuccessfullyRegistered'),
+          translate('PROFESSIONAL_SUCCESSFULY_REGISTERED'),
           `
-          <p>${translate('registeredProfessionalSubtitle')}</p>
-          <p>${translate('professionalCTABtn')}</p>
+          <p>${translate('REGISTERED_PROFESSIONAL_SUBTITLE')}</p>
+          <p>${translate('PROFESSIONAL_CTA_BUTTON')}</p>
           <a href="${
             process.env.APP_PROFILE_URL
           }" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
-          ${translate('professionalProfileCompleteLabelButton')}</a>
-          <p>${translate('professionalWelcomeAboard')}</p>
+          ${translate('PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON')}</a>
+          <p>${translate('PROFESSIONAL_WELCOME_ABOARD')}</p>
         `,
           user.firstName
         )
@@ -60,7 +60,7 @@ export async function professionalRoutes(fastify: FastifyInstance) {
 
       return reply.status(201).send({
         status: true,
-        message: translate('professionalSuccessfullyRegistered'),
+        message: translate('PROFESSIONAL_SUCCESSFULY_REGISTERED'),
         professional: {
           ...professional,
           password: undefined
