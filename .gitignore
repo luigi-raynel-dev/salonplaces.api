@@ -1,3 +1,6 @@
 node_modules
 # Keep environment variables out of version control
 .env
+
+src/public/uploads/avatars/*
+!src/public/uploads/avatars/.gitkeep

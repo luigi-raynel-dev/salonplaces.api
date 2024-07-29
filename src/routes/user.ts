@@ -7,6 +7,8 @@ import { compareSync, genSaltSync, hashSync } from 'bcrypt'
 import { authenticate } from '../plugins/authenticate'
 import { translate } from '../modules/translate'
 import { sendCode, validateCode } from '../modules/userCode'
+import fs from 'fs'
+import path from 'path'
 
 const authReply = (user: User, fastify: FastifyInstance) => {
   return {
@@ -18,6 +20,14 @@ const authReply = (user: User, fastify: FastifyInstance) => {
     }
   }
 }
+
+const avatarBasePath = path.join(
+  __dirname,
+  '..',
+  'public',
+  'uploads',
+  'avatars'
+)
 
 export async function userRoutes(fastify: FastifyInstance) {
   fastify.post('/signUp', async (request, reply) => {
@@ -227,4 +237,68 @@ export async function userRoutes(fastify: FastifyInstance) {
       return { status: true }
     }
   )
+
+  fastify.patch(
+    '/avatar',
+    {
+      onRequest: [authenticate]
+    },
+    async (request, reply) => {
+      const bodyScheme = z.object({
+        base64: z.string().base64().nullable()
+      })
+      const { base64 } = bodyScheme.parse(request.body)
+      const { email } = request.user as JWTPayload
+
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { email }
+      })
+
+      if (user.avatarUrl) {
+        fs.unlink(path.join(avatarBasePath, user.avatarUrl), error => {
+          if (error) console.error(error)
+        })
+      }
+
+      let avatarUrl = null
+
+      if (base64) {
+        const buffer = Buffer.from(base64, 'base64')
+
+        const timestamp = Date.now()
+        avatarUrl = `${timestamp}_${user.id}.jpg`
+
+        const filePath = path.join(avatarBasePath, avatarUrl)
+
+        fs.writeFile(filePath, buffer, error => {
+          if (error)
+            return reply
+              .status(500)
+              .send({ status: false, errorDetails: error.message })
+        })
+      }
+
+      await prisma.user.update({
+        data: { avatarUrl },
+        where: { email }
+      })
+
+      return { status: true }
+    }
+  )
+
+  fastify.get('/avatar/:avatarUrl', async (request, reply) => {
+    const queryParams = z.object({
+      avatarUrl: z.string()
+    })
+    const { avatarUrl } = queryParams.parse(request.params)
+
+    const filePath = path.join(avatarBasePath, avatarUrl)
+    try {
+      const buffer = fs.readFileSync(filePath)
+      reply.type('image/jpeg').send(buffer)
+    } catch {
+      return reply.status(404).send()
+    }
+  })
 }
