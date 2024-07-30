@@ -130,4 +130,29 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  fastify.get('/:id', async request => {
+    const queryParams = z.object({
+      id: z.string()
+    })
+    const { id } = queryParams.parse(request.params)
+
+    const professional = await prisma.professional.findUnique({
+      where: { id },
+      include: {
+        user: {
+          include: {
+            gender: true
+          }
+        }
+      }
+    })
+
+    return {
+      professional: {
+        ...professional,
+        password: undefined
+      }
+    }
+  })
 }
