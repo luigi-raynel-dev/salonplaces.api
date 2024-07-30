@@ -9,6 +9,7 @@ import { translate } from '../modules/translate'
 import { sendCode, validateCode } from '../modules/userCode'
 import fs from 'fs'
 import path from 'path'
+import dayjs from 'dayjs'
 
 const authReply = (user: User, fastify: FastifyInstance) => {
   return {
@@ -108,7 +109,8 @@ export async function userRoutes(fastify: FastifyInstance) {
       const { email } = request.user as JWTPayload
 
       const user = await prisma.user.findUniqueOrThrow({
-        where: { email }
+        where: { email },
+        include: { gender: true }
       })
 
       return {
@@ -133,17 +135,20 @@ export async function userRoutes(fastify: FastifyInstance) {
       })
 
       const bodyScheme = z.object({
-        name: z.string(),
         firstName: z.string().min(3),
         lastName: z.string().min(3).nullable().optional(),
-        birthday: z.date().nullable().optional(),
-        phone: z.string().nullable().optional()
+        birthday: z.string().nullable().optional(),
+        phone: z.string().nullable().optional(),
+        genderId: z.number().nullable().optional()
       })
       const data = bodyScheme.parse(request.body)
 
+      if (data.birthday) data.birthday = dayjs(data.birthday).toISOString()
+
       user = await prisma.user.update({
         data,
-        where: { email }
+        where: { email },
+        include: { gender: true }
       })
 
       return {
