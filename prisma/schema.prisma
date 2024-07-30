@@ -139,7 +139,7 @@ model Card {
 
 model Salon {
   id                  String    @id @default(cuid())
-  planCountryId       Int
+  planCountryId       Int?
   cardIdForRecurrence String?
   name                String
   slug                String    @unique
@@ -149,22 +149,22 @@ model Salon {
   quotaProfessionals  Int?
   description         String?
   cancellationPolicy  String?
-  active              Boolean
-  percentageDiscount  Int
+  active              Boolean   @default(false)
+  percentageDiscount  Int       @default(0)
   logoUrl             String?
   coverUrl            String?
   phone               String?   @unique
   instagram           String?
   tiktok              String?
   facebook            String?
-  block               Boolean
+  block               Boolean   @default(false)
   blockReason         String?
-  recurrence          Boolean
+  recurrence          Boolean   @default(false)
   planExpirationDate  DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @default(now())
 
-  planCountry          CountryPlan            @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
+  planCountry          CountryPlan?           @relation(fields: [planCountryId], references: [id], onDelete: Cascade)
   Card                 Card[]
   SalonMedia           SalonMedia[]
   Location             Location[]
