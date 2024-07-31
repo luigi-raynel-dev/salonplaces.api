@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma'
 import { authenticate } from '../plugins/authenticate'
 import { JWTPayload } from '../modules/auth'
 
-export async function professionalRoutes(fastify: FastifyInstance) {
+export async function salonRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/join',
     {
@@ -24,15 +24,42 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       })
 
       const bodyScheme = z.object({
-        name: z.string().min(2),
+        name: z.string(),
         slug: z.string(),
-        planCountryId: z.number()
+        countryPlanId: z.number().nullable().optional(),
+        location: z.object({
+          address: z.string(),
+          latitude: z.number(),
+          longitude: z.number(),
+          number: z.string(),
+          zipCode: z.string(),
+          complement: z.string().nullable().optional(),
+          referencePoint: z.string().nullable().optional()
+        })
       })
-      const data = bodyScheme.parse(request.body)
+      const { name, slug, countryPlanId, location } = bodyScheme.parse(
+        request.body
+      )
 
-      const salon = await prisma.salon.create({
+      let salon = await prisma.salon.findUnique({ where: { slug } })
+
+      if (salon)
+        return reply.status(422).send({
+          status: false,
+          error: 'SLUG_IN_USE'
+        })
+
+      salon = await prisma.salon.create({
         data: {
-          ...data
+          name,
+          slug,
+          countryPlanId,
+          Location: {
+            create: {
+              active: true,
+              ...location
+            }
+          }
         }
       })
 
