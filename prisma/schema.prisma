@@ -143,11 +143,11 @@ model Salon {
   cardIdForRecurrence String?
   name                String
   slug                String    @unique
-  cnpj                String?   @unique
-  cpf                 String?
+  companyIdentifier   String?   @unique
+  holderIdentifier    String?
   holder              String?
   quotaProfessionals  Int?
-  description         String?
+  description         String?   @db.LongText
   cancellationPolicy  String?
   active              Boolean   @default(false)
   percentageDiscount  Int       @default(0)
