@@ -1,11 +1,59 @@
 import { FastifyInstance } from 'fastify'
-import { boolean, z } from 'zod'
+import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { authenticate } from '../plugins/authenticate'
 import { JWTPayload } from '../modules/auth'
 import { salonAdmin } from '../plugins/salonAdmin'
 
 export async function salonRoutes(fastify: FastifyInstance) {
+  fastify.get('/:slug', async (request, reply) => {
+    const queryParams = z.object({
+      slug: z.string()
+    })
+    const { slug } = queryParams.parse(request.params)
+
+    const salon = await prisma.salon.findUnique({
+      include: {
+        Location: {
+          take: 1,
+          include: {
+            LocationHasProfessional: {
+              include: {
+                professional: {
+                  include: {
+                    user: {
+                      include: {
+                        gender: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      },
+      where: {
+        slug,
+        active: true,
+        block: false
+      }
+    })
+
+    if (!salon)
+      return reply.status(404).send({
+        status: false,
+        error: 'SALON_NOT_FOUND'
+      })
+
+    return reply.send({
+      salon
+    })
+  })
+
   fastify.post(
     '/join',
     {

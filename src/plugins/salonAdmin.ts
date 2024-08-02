@@ -9,7 +9,7 @@ export async function salonAdmin(request: FastifyRequest, reply: FastifyReply) {
   })
   const { slug } = queryParams.parse(request.params)
 
-  let salon = await prisma.salon.findUnique({ where: { slug } })
+  const salon = await prisma.salon.findUnique({ where: { slug } })
 
   if (!salon)
     return reply.status(404).send({
