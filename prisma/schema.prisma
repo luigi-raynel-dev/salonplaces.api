@@ -152,7 +152,6 @@ model Salon {
   active              Boolean   @default(false)
   percentageDiscount  Int       @default(0)
   logoUrl             String?
-  coverUrl            String?
   phone               String?   @unique
   instagram           String?
   tiktok              String?
@@ -193,7 +192,6 @@ model Location {
   active            Boolean
   phone             String?
   logoUrl           String?
-  coverUrl          String?
   zipCode           String
   latitude          Int
   longitude         Int

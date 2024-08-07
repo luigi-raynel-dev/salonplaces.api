@@ -4,6 +4,10 @@ import { prisma } from '../lib/prisma'
 import { authenticate } from '../plugins/authenticate'
 import { JWTPayload } from '../modules/auth'
 import { salonAdmin } from '../plugins/salonAdmin'
+import fs from 'fs'
+import path from 'path'
+
+const salonMediaPath = path.join(__dirname, '..', 'public', 'uploads', 'salon')
 
 export async function salonRoutes(fastify: FastifyInstance) {
   fastify.get('/:slug', async (request, reply) => {
@@ -34,7 +38,8 @@ export async function salonRoutes(fastify: FastifyInstance) {
           orderBy: {
             createdAt: 'asc'
           }
-        }
+        },
+        SalonMedia: true
       },
       where: {
         slug,
@@ -179,4 +184,123 @@ export async function salonRoutes(fastify: FastifyInstance) {
       })
     }
   )
+
+  fastify.patch(
+    '/:slug/media',
+    {
+      onRequest: [authenticate, salonAdmin]
+    },
+    async (request, reply) => {
+      const queryParams = z.object({
+        slug: z.string()
+      })
+      const { slug } = queryParams.parse(request.params)
+
+      let salon = await prisma.salon.findUniqueOrThrow({ where: { slug } })
+
+      const bodyScheme = z.object({
+        logo: z.string().base64().nullable().optional(),
+        media: z
+          .array(
+            z.object({
+              filename: z.string(),
+              base64: z.string().nullable().optional(),
+              id: z.number().nullable().optional()
+            })
+          )
+          .nullable()
+          .optional()
+      })
+      const { logo, media } = bodyScheme.parse(request.body)
+
+      if (logo !== undefined) {
+        if (salon.logoUrl) {
+          fs.unlink(path.join(salonMediaPath, salon.logoUrl), error => {
+            if (error) console.error(error)
+          })
+        }
+
+        let logoUrl = null
+
+        if (logo) {
+          const buffer = Buffer.from(logo, 'base64')
+
+          const timestamp = Date.now()
+          logoUrl = `${timestamp}_${salon.id}.jpg`
+
+          const logoPath = path.join(salonMediaPath, logoUrl)
+
+          fs.writeFile(logoPath, buffer, error => {
+            if (error)
+              return reply
+                .status(500)
+                .send({ status: false, errorDetails: error.message })
+          })
+        }
+
+        salon = await prisma.salon.update({
+          data: { logoUrl },
+          where: { slug }
+        })
+      }
+
+      if (media) {
+        for (const [index, item] of media.entries()) {
+          const order = index + 1
+          if (item.base64) {
+            const buffer = Buffer.from(item.base64, 'base64')
+
+            const timestamp = Date.now()
+            const url = `${timestamp}_${index}_${salon.id}.jpg`
+
+            const mediaPath = path.join(salonMediaPath, url)
+
+            fs.writeFile(mediaPath, buffer, error => {
+              if (error)
+                return reply
+                  .status(500)
+                  .send({ status: false, errorDetails: error.message })
+            })
+
+            await prisma.salonMedia.create({
+              data: {
+                url,
+                order,
+                filename: item.filename,
+                salonId: salon.id
+              }
+            })
+          } else if (item.id) {
+            await prisma.salonMedia.update({
+              data: {
+                order,
+                filename: item.filename
+              },
+              where: { id: item.id }
+            })
+          }
+        }
+      }
+
+      return reply.send({
+        status: true,
+        salon
+      })
+    }
+  )
+
+  fastify.get('/media/:filename', async (request, reply) => {
+    const queryParams = z.object({
+      filename: z.string()
+    })
+    const { filename } = queryParams.parse(request.params)
+
+    const filePath = path.join(salonMediaPath, filename)
+    try {
+      const buffer = fs.readFileSync(filePath)
+      reply.type('image/jpeg').send(buffer)
+    } catch {
+      return reply.status(404).send()
+    }
+  })
 }

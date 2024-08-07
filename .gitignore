@@ -4,3 +4,5 @@ node_modules
 
 src/public/uploads/avatars/*
 !src/public/uploads/avatars/.gitkeep
+src/public/uploads/salon/*
+!src/public/uploads/salon/.gitkeep
