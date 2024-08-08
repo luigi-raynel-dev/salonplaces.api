@@ -245,6 +245,28 @@ export async function salonRoutes(fastify: FastifyInstance) {
       }
 
       if (media) {
+        const salonMedia = await prisma.salonMedia.findMany({
+          where: {
+            salonId: salon.id
+          }
+        })
+
+        for (const item of salonMedia) {
+          const mediaItem = media.find(({ id }) => id === item.id)
+
+          if (!mediaItem) {
+            await prisma.salonMedia.delete({
+              where: {
+                id: item.id
+              }
+            })
+
+            fs.unlink(path.join(salonMediaPath, item.url), error => {
+              if (error) console.error(error)
+            })
+          }
+        }
+
         for (const [index, item] of media.entries()) {
           const order = index + 1
           if (item.base64) {
