@@ -83,8 +83,8 @@ export async function salonRoutes(fastify: FastifyInstance) {
         countryPlanId: z.number().nullable().optional(),
         location: z.object({
           address: z.string(),
-          latitude: z.number(),
-          longitude: z.number(),
+          latitude: z.string(),
+          longitude: z.string(),
           number: z.string(),
           zipCode: z.string(),
           complement: z.string().nullable().optional(),

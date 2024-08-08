@@ -193,8 +193,8 @@ model Location {
   phone             String?
   logoUrl           String?
   zipCode           String
-  latitude          Int
-  longitude         Int
+  latitude          String
+  longitude         String
   address           String
   number            String
   complement        String?

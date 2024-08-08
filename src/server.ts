@@ -8,6 +8,7 @@ import { setLanguage } from './plugins/setLanguage'
 import { userRoutes } from './routes/user'
 import { genderRoutes } from './routes/gender'
 import { salonRoutes } from './routes/salon'
+import { locationRoutes } from './routes/location'
 
 const schema = {
   type: 'object',
@@ -63,6 +64,9 @@ async function bootstrap() {
     await fastify.register(genderRoutes, { prefix: '/genders' })
     await fastify.register(professionalRoutes, { prefix: '/professionals' })
     await fastify.register(salonRoutes, { prefix: '/salons' })
+    await fastify.register(locationRoutes, {
+      prefix: '/salons/:slug/locations'
+    })
 
     const port = Number(process.env.FASTIFY_PORT) || 3333
 
