@@ -1,8 +1,15 @@
 import { FastifyInstance } from 'fastify'
-import { z } from 'zod'
+import { object, z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { authenticate } from '../plugins/authenticate'
 import { salonAdmin } from '../plugins/salonAdmin'
+import { Prisma } from '@prisma/client'
+import { handleOpeningHours } from '../modules/openingHour'
+
+export type WeekdayOpeningHoursType = {
+  opening: string
+  closing: string
+}
 
 export async function locationRoutes(fastify: FastifyInstance) {
   fastify.patch(
@@ -72,6 +79,121 @@ export async function locationRoutes(fastify: FastifyInstance) {
       return reply.send({
         status: true,
         location
+      })
+    }
+  )
+
+  fastify.get('/:locationId/openingHours', async (request, reply) => {
+    const queryParams = z.object({
+      locationId: z.string(),
+      slug: z.string()
+    })
+    const { locationId: strLocationId, slug } = queryParams.parse(
+      request.params
+    )
+
+    const locationId = Number(strLocationId)
+
+    const location = await prisma.location.findUnique({
+      where: {
+        id: locationId,
+        salon: {
+          slug: {
+            equals: slug
+          }
+        }
+      }
+    })
+
+    if (!location)
+      return reply.status(404).send({
+        status: false,
+        error: 'LOCATION_NOT_FOUND'
+      })
+
+    const openingHour = await prisma.openingHour.findFirst({
+      where: { locationId }
+    })
+
+    return reply.send({
+      openingHour: openingHour ? handleOpeningHours(openingHour) : undefined
+    })
+  })
+
+  fastify.patch(
+    '/:locationId/openingHours',
+    {
+      onRequest: [authenticate, salonAdmin]
+    },
+    async (request, reply) => {
+      const queryParams = z.object({
+        locationId: z.string(),
+        slug: z.string()
+      })
+      const { locationId: strLocationId, slug } = queryParams.parse(
+        request.params
+      )
+
+      const locationId = Number(strLocationId)
+
+      let location = await prisma.location.findUnique({
+        where: {
+          id: locationId,
+          salon: {
+            slug: {
+              equals: slug
+            }
+          }
+        }
+      })
+
+      if (!location)
+        return reply.status(404).send({
+          status: false,
+          error: 'LOCATION_NOT_FOUND'
+        })
+
+      const dayScheme = z
+        .object({ opening: z.string(), closing: z.string() })
+        .nullable()
+
+      const bodyScheme = z.object({
+        id: z.number().optional(),
+        sunday: dayScheme,
+        monday: dayScheme,
+        tuesday: dayScheme,
+        wednesday: dayScheme,
+        thursday: dayScheme,
+        friday: dayScheme,
+        saturday: dayScheme
+      })
+
+      const { id, ...weekOpeningHours } = bodyScheme.parse(request.body)
+
+      const data: Prisma.OpeningHourUncheckedCreateInput = {
+        locationId
+      }
+      const weekdays = Object.keys(weekOpeningHours)
+
+      for (const weekday of weekdays) {
+        const day = weekday as keyof typeof weekOpeningHours
+        const dayOpeningHours = weekOpeningHours[
+          day
+        ] as WeekdayOpeningHoursType | null
+        data[`${day}OpeningHours`] = dayOpeningHours?.opening || null
+        data[`${day}ClosingHours`] = dayOpeningHours?.closing || null
+      }
+
+      const openingHour = id
+        ? await prisma.openingHour.update({
+            data,
+            where: { id }
+          })
+        : await prisma.openingHour.create({ data })
+
+      return reply.send({
+        status: true,
+        openingHour: handleOpeningHours(openingHour)
       })
     }
   )
