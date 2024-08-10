@@ -7,6 +7,7 @@ export const createInitialUsers = async (prisma: PrismaClient) => {
       data: {
         firstName: 'Jonh',
         lastName: 'Doe',
+        username: 'jhon.doe',
         email: 'user@salonplaces.com',
         password: hashSync('password', genSaltSync()),
         Staff: { create: {} }

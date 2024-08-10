@@ -22,6 +22,9 @@ const schema = {
     },
     FASTIFY_PORT: {
       type: 'string'
+    },
+    APP_BG: {
+      type: 'string'
     }
   }
 }

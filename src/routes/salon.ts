@@ -39,6 +39,19 @@ export async function salonRoutes(fastify: FastifyInstance) {
             createdAt: 'asc'
           }
         },
+        SalonHasProfessional: {
+          include: {
+            professional: {
+              include: {
+                user: {
+                  include: {
+                    gender: true
+                  }
+                }
+              }
+            }
+          }
+        },
         SalonMedia: true
       },
       where: {
@@ -325,4 +338,114 @@ export async function salonRoutes(fastify: FastifyInstance) {
       return reply.status(404).send()
     }
   })
+
+  fastify.patch(
+    '/:slug/professionals/:professionalId',
+    {
+      onRequest: [authenticate, salonAdmin]
+    },
+    async (request, reply) => {
+      const queryParams = z.object({
+        slug: z.string(),
+        professionalId: z.string()
+      })
+      const { slug, professionalId } = queryParams.parse(request.params)
+
+      const salon = await prisma.salon.findUniqueOrThrow({ where: { slug } })
+
+      const bodyScheme = z.object({
+        active: z.boolean().default(true),
+        isAdmin: z.boolean().default(false),
+        locations: z.array(
+          z.object({
+            locationId: z.number(),
+            commissionPercentage: z.number().nullable().optional()
+          })
+        )
+      })
+      const { locations, ...professional } = bodyScheme.parse(request.body)
+
+      await prisma.salonHasProfessional.upsert({
+        create: {
+          ...professional,
+          professionalId,
+          salonId: salon.id
+        },
+        update: professional,
+        where: {
+          salonId_professionalId: {
+            salonId: salon.id,
+            professionalId
+          }
+        }
+      })
+
+      for (const location of locations) {
+        const salonLocation = await prisma.location.findUnique({
+          where: {
+            id: location.locationId,
+            salonId: salon.id
+          }
+        })
+
+        if (!salonLocation)
+          return reply.status(404).send({
+            status: false,
+            error: 'LOCATION_NOT_FOUND'
+          })
+
+        await prisma.locationHasProfessional.upsert({
+          create: {
+            ...location,
+            professionalId
+          },
+          update: location,
+          where: {
+            locationId_professionalId: {
+              professionalId,
+              locationId: location.locationId
+            }
+          }
+        })
+      }
+
+      return reply.send({ status: true })
+    }
+  )
+
+  fastify.delete(
+    '/:slug/professionals/:professionalId',
+    {
+      onRequest: [authenticate, salonAdmin]
+    },
+    async (request, reply) => {
+      const queryParams = z.object({
+        slug: z.string(),
+        professionalId: z.string()
+      })
+      const { slug, professionalId } = queryParams.parse(request.params)
+
+      const salon = await prisma.salon.findUniqueOrThrow({ where: { slug } })
+
+      await prisma.salonHasProfessional.delete({
+        where: {
+          salonId_professionalId: {
+            salonId: salon.id,
+            professionalId
+          }
+        }
+      })
+
+      await prisma.locationHasProfessional.deleteMany({
+        where: {
+          location: {
+            salonId: salon.id
+          },
+          professionalId
+        }
+      })
+
+      return reply.send({ status: true })
+    }
+  )
 }

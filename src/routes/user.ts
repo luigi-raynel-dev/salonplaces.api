@@ -2,7 +2,12 @@ import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { Prisma, User } from '@prisma/client'
-import { getHash, JWTPayload, tokenGenerator } from '../modules/auth'
+import {
+  generateUniqueUsername,
+  getHash,
+  JWTPayload,
+  tokenGenerator
+} from '../modules/auth'
 import { compareSync, genSaltSync, hashSync } from 'bcrypt'
 import { authenticate } from '../plugins/authenticate'
 import { translate } from '../modules/translate'
@@ -53,10 +58,13 @@ export async function userRoutes(fastify: FastifyInstance) {
         error: 'USER_ALREADY_EXISTS'
       })
 
+    const username = await generateUniqueUsername(email.split('@')[0])
+
     const hash = getHash(password)
     const data: Prisma.UserCreateInput = {
       firstName,
       lastName,
+      username,
       email,
       password: hash
     }

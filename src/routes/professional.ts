@@ -14,6 +14,11 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       onRequest: [authenticate]
     },
     async (request, reply) => {
+      const bodyScheme = z.object({
+        profileUrl: z.string()
+      })
+      const { profileUrl } = bodyScheme.parse(request.body)
+
       const { email } = request.user as JWTPayload
 
       const user = await prisma.user.findUniqueOrThrow({
@@ -48,9 +53,9 @@ export async function professionalRoutes(fastify: FastifyInstance) {
           `
           <p>${translate('REGISTERED_PROFESSIONAL_SUBTITLE')}</p>
           <p>${translate('PROFESSIONAL_CTA_BUTTON')}</p>
-          <a href="${
-            process.env.APP_PROFILE_URL
-          }" style="display: inline-block; padding: 10px 20px; color: white; background-color: #007BFF; text-decoration: none; border-radius: 5px;">
+          <a href="${profileUrl}" style="display: inline-block; padding: 10px 20px; color: white; background-color: ${
+            process.env.APP_BG
+          }; text-decoration: none; border-radius: 5px;">
           ${translate('PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON')}</a>
           <p>${translate('PROFESSIONAL_WELCOME_ABOARD')}</p>
         `,
@@ -131,14 +136,25 @@ export async function professionalRoutes(fastify: FastifyInstance) {
     }
   )
 
-  fastify.get('/:id', async request => {
+  fastify.get('/:idOrUsername', async (request, reply) => {
     const queryParams = z.object({
-      id: z.string()
+      idOrUsername: z.string()
     })
-    const { id } = queryParams.parse(request.params)
+    const { idOrUsername } = queryParams.parse(request.params)
 
-    const professional = await prisma.professional.findUnique({
-      where: { id },
+    const professional = await prisma.professional.findFirst({
+      where: {
+        OR: [
+          {
+            id: idOrUsername
+          },
+          {
+            user: {
+              username: idOrUsername
+            }
+          }
+        ]
+      },
       include: {
         user: {
           include: {
@@ -148,11 +164,11 @@ export async function professionalRoutes(fastify: FastifyInstance) {
       }
     })
 
-    return {
-      professional: {
-        ...professional,
-        password: undefined
-      }
-    }
+    if (!professional)
+      return reply.status(404).send({
+        error: 'PROFESSIONAL_NOT_FOUND'
+      })
+
+    return { professional }
   })
 }

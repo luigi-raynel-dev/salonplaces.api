@@ -15,7 +15,9 @@ export function emailTemplate(
     </head>
     <body style="font-family: Verdana">
     <div style="margin: 0 auto; width: 100%; max-width: 800px; border: 1px solid #ddd">
-      <div style="background: #A34FD8; width: 100%; max-width: 800px; text-align: center; margin: 0 auto; padding: 8px; color: white">
+      <div style="background: ${
+        process.env.APP_BG
+      }; width: 100%; max-width: 800px; text-align: center; margin: 0 auto; padding: 8px; color: white">
         <h2>${process.env.APP_NAME} - ${title}</h2>
       </div>
       <div style="padding: 8px">
