@@ -9,6 +9,7 @@ import { userRoutes } from './routes/user'
 import { genderRoutes } from './routes/gender'
 import { salonRoutes } from './routes/salon'
 import { locationRoutes } from './routes/location'
+import { serviceRoutes } from './routes/service'
 
 const schema = {
   type: 'object',
@@ -69,6 +70,9 @@ async function bootstrap() {
     await fastify.register(salonRoutes, { prefix: '/salons' })
     await fastify.register(locationRoutes, {
       prefix: '/salons/:slug/locations'
+    })
+    await fastify.register(serviceRoutes, {
+      prefix: '/salons/:slug/services'
     })
 
     const port = Number(process.env.FASTIFY_PORT) || 3333
