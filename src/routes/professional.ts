@@ -56,7 +56,7 @@ export async function professionalRoutes(fastify: FastifyInstance) {
           <a href="${profileUrl}" style="display: inline-block; padding: 10px 20px; color: white; background-color: ${
             process.env.APP_BG
           }; text-decoration: none; border-radius: 5px;">
-          ${translate('PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON')}</a>
+          ${translate('PROFILE_COMPLETE_LABEL_BUTTON')}</a>
           <p>${translate('PROFESSIONAL_WELCOME_ABOARD')}</p>
         `,
           user.firstName

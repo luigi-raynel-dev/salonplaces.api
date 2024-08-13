@@ -18,7 +18,7 @@ const language: translationKeywords = {
     'Estamos muito felizes em ter você em nossa plataforma de profissionais de estética. Para ajudar você a começar e garantir que os clientes possam encontrar e agendar seus serviços facilmente, sugerimos que complete seu perfil com todos os detalhes importantes.',
   PROFESSIONAL_CTA_BUTTON:
     'Clique no botão abaixo para completar seu perfil e começar a atrair e gerenciar clientes:',
-  PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON: 'Completar seu perfil',
+  PROFILE_COMPLETE_LABEL_BUTTON: 'Completar seu perfil',
   PROFESSIONAL_WELCOME: `Boas-vindas ao ${process.env.APP_NAME} para profissionais!`,
   PROFESSIONAL_WELCOME_ABOARD: 'Estamos aqui pelo seu sucesso!',
   PROFESSIONAL_SUCCESSFULY_REGISTERED: 'Cadastro realizado com sucesso!',
@@ -32,7 +32,13 @@ const language: translationKeywords = {
   USE_THIS_CODE: ({ action }) =>
     `Por favor, utilize este código acima para confirmar a ${action} no nossa plataforma.`,
   CODE_REQUEST: ({ action }) => `Código para ${action}`,
-  PASSWORD_RECOVERY: 'redefinição da senha'
+  PASSWORD_RECOVERY: 'redefinição da senha',
+  CUSTOMER_WELCOME: `Boas-vindas ao ${process.env.APP_NAME}!`,
+  CUSTOMER_SUCCESSFULY_REGISTERED: 'Cadastro realizado com sucesso!',
+  REGISTERED_CUSTOMER_SUBTITLE:
+    'Estamos muito felizes em ter você em nossa plataforma. Queremos facilitar a sua busca pelos melhores e mais bem avaliados salões de sua região. Sugerimos que complete seu perfil com todos os detalhes importantes.',
+  CUSTOMER_CTA_BUTTON: 'Clique no botão abaixo para completar seu perfil:',
+  CUSTOMER_WELCOME_ABOARD: 'Estamos aqui por você!'
 }
 
 export default language

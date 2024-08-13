@@ -17,7 +17,7 @@ const language: translationKeywords = {
     "We're so excited to have you join our awesome platform of professionals. To help you get started and make sure clients can easily find and book your services, we suggest you complete your profile.",
   PROFESSIONAL_CTA_BUTTON:
     'Click the button below to complete your profile and start attracting clients:',
-  PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON: 'Complete Your Profile',
+  PROFILE_COMPLETE_LABEL_BUTTON: 'Complete Your Profile',
   PROFESSIONAL_WELCOME: `Welcome to ${process.env.APP_NAME} - Professionals!`,
   PROFESSIONAL_WELCOME_ABOARD: "Welcome aboard, and here's to your success!",
   PROFESSIONAL_SUCCESSFULY_REGISTERED: 'Registration completed successfully!',
@@ -31,7 +31,13 @@ const language: translationKeywords = {
   USE_THIS_CODE: ({ action }) =>
     `Please use this code above to confirm the ${action}.`,
   CODE_REQUEST: ({ action }) => `Code to ${action}`,
-  PASSWORD_RECOVERY: 'password recovery'
+  PASSWORD_RECOVERY: 'password recovery',
+  CUSTOMER_WELCOME: `Welcome to ${process.env.APP_NAME}!`,
+  CUSTOMER_SUCCESSFULY_REGISTERED: 'Registration completed successfully!',
+  REGISTERED_CUSTOMER_SUBTITLE:
+    'We are so excited to have you on our platform. We want to make it easier for you to find the best and most highly rated salons in your region. We suggest you complete your profile with all the important details.',
+  CUSTOMER_CTA_BUTTON: 'Click the button below to complete your profile:',
+  CUSTOMER_WELCOME_ABOARD: 'We are here for you!'
 }
 
 export default language

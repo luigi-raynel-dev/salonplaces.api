@@ -10,6 +10,7 @@ import { genderRoutes } from './routes/gender'
 import { salonRoutes } from './routes/salon'
 import { locationRoutes } from './routes/location'
 import { serviceRoutes } from './routes/service'
+import { customerRoutes } from './routes/customer'
 
 const schema = {
   type: 'object',
@@ -64,6 +65,7 @@ async function bootstrap() {
     })
 
     await fastify.register(userRoutes)
+    await fastify.register(customerRoutes, { prefix: '/customers' })
     await fastify.register(planRoutes, { prefix: '/plans' })
     await fastify.register(genderRoutes, { prefix: '/genders' })
     await fastify.register(professionalRoutes, { prefix: '/professionals' })

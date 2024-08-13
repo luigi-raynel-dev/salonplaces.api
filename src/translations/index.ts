@@ -17,7 +17,7 @@ export type translationKeywords = {
   USER_NOT_FOUND: string
   REGISTERED_PROFESSIONAL_SUBTITLE: string
   PROFESSIONAL_CTA_BUTTON: string
-  PROFESSIONAL_PROFILE_COMPLETE_LABEL_BUTTON: string
+  PROFILE_COMPLETE_LABEL_BUTTON: string
   PROFESSIONAL_WELCOME: string
   PROFESSIONAL_WELCOME_ABOARD: string
   PROFESSIONAL_SUCCESSFULY_REGISTERED: string
@@ -28,6 +28,11 @@ export type translationKeywords = {
   USE_THIS_CODE: (props: { action: string }) => string
   CODE_REQUEST: (props: { action: string }) => string
   PASSWORD_RECOVERY: string
+  CUSTOMER_WELCOME: string
+  CUSTOMER_SUCCESSFULY_REGISTERED: string
+  REGISTERED_CUSTOMER_SUBTITLE: string
+  CUSTOMER_CTA_BUTTON: string
+  CUSTOMER_WELCOME_ABOARD: string
 }
 
 export default {
