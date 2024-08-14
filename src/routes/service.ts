@@ -14,7 +14,9 @@ export async function serviceRoutes(fastify: FastifyInstance) {
     const salon = await prisma.salon.findUniqueOrThrow({ where: { slug } })
 
     const services = await prisma.service.findMany({
-      where: { salonId: salon.id }
+      where: {
+        salonId: salon.id
+      }
     })
 
     return { services }

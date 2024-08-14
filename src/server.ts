@@ -11,6 +11,7 @@ import { salonRoutes } from './routes/salon'
 import { locationRoutes } from './routes/location'
 import { serviceRoutes } from './routes/service'
 import { customerRoutes } from './routes/customer'
+import { bookingRoutes } from './routes/booking'
 
 const schema = {
   type: 'object',
@@ -26,6 +27,9 @@ const schema = {
       type: 'string'
     },
     APP_BG: {
+      type: 'string'
+    },
+    INTERVAL_TIME: {
       type: 'string'
     }
   }
@@ -75,6 +79,9 @@ async function bootstrap() {
     })
     await fastify.register(serviceRoutes, {
       prefix: '/salons/:slug/services'
+    })
+    await fastify.register(bookingRoutes, {
+      prefix: '/salons/:slug/locations/:locationId/booking'
     })
 
     const port = Number(process.env.FASTIFY_PORT) || 3333

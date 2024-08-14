@@ -217,7 +217,7 @@ model Location {
   OpeningHour             OpeningHour[]
   LocationHasProfessional LocationHasProfessional[]
   LocationHasService      LocationHasService[]
-  Scheduling              Scheduling[]
+  Booking                 Booking[]
 
   @@unique([zipCode, number])
 }
@@ -249,8 +249,8 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Scheduling Scheduling[]
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Booking Booking[]
 }
 
 model Professional {
@@ -265,7 +265,7 @@ model Professional {
   SalonHasProfessional    SalonHasProfessional[]
   LocationHasProfessional LocationHasProfessional[]
   ProfessionalHasService  ProfessionalHasService[]
-  Scheduling              Scheduling[]
+  Booking                 Booking[]
 }
 
 model SalonHasProfessional {
@@ -309,7 +309,7 @@ model Service {
   salon                  Salon                    @relation(fields: [salonId], references: [id], onDelete: Cascade)
   LocationHasService     LocationHasService[]
   ProfessionalHasService ProfessionalHasService[]
-  Scheduling             Scheduling[]
+  Booking                Booking[]
 
   @@unique([salonId, title])
 }
@@ -339,7 +339,7 @@ model ProfessionalHasService {
   @@id([professionalId, serviceId])
 }
 
-model Scheduling {
+model Booking {
   id              String   @id @default(uuid())
   customerId      Int
   locationId      Int
