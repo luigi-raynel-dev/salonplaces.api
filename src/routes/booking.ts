@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify'
-import { custom, z } from 'zod'
+import { custom, number, z } from 'zod'
 import { prisma } from '../lib/prisma'
 import {
   generateTimeSlots,
@@ -14,6 +14,56 @@ import { JWTPayload } from '../modules/auth'
 import { getTimeSlots } from '../modules/booking'
 
 export async function bookingRoutes(fastify: FastifyInstance) {
+  fastify.get('/:bookingId', async (request, reply) => {
+    const queryParams = z.object({
+      slug: z.string(),
+      locationId: z.string(),
+      bookingId: z.string().uuid()
+    })
+    const { bookingId: id, locationId: strLocationId } = queryParams.parse(
+      request.params
+    )
+
+    const locationId = Number(strLocationId)
+
+    let booking = await prisma.booking.findFirst({
+      include: {
+        customer: {
+          include: {
+            user: {
+              include: {
+                gender: true
+              }
+            }
+          }
+        },
+        professional: {
+          include: {
+            user: {
+              include: {
+                gender: true
+              }
+            }
+          }
+        },
+        service: true,
+        location: true
+      },
+      where: {
+        id,
+        locationId
+      }
+    })
+
+    if (!booking)
+      return reply.status(404).send({
+        status: false,
+        error: 'BOOKING_NOT_FOUND'
+      })
+
+    return { booking }
+  })
+
   fastify.post('/times', async (request, reply) => {
     const queryParams = z.object({
       slug: z.string(),
