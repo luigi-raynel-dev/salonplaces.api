@@ -320,4 +320,162 @@ export async function bookingRoutes(fastify: FastifyInstance) {
       }
     }
   )
+
+  fastify.patch(
+    '/:bookingId',
+    {
+      onRequest: [authenticate]
+    },
+    async (request, reply) => {
+      const queryParams = z.object({
+        slug: z.string(),
+        locationId: z.string(),
+        bookingId: z.string().uuid()
+      })
+      const {
+        slug,
+        locationId: strLocationId,
+        bookingId
+      } = queryParams.parse(request.params)
+
+      const locationId = Number(strLocationId)
+
+      const location = await prisma.location.findUnique({
+        where: {
+          id: locationId,
+          salon: {
+            slug: {
+              equals: slug
+            }
+          }
+        }
+      })
+
+      if (!location)
+        return reply.status(404).send({
+          status: false,
+          error: 'LOCATION_NOT_FOUND'
+        })
+
+      const { email } = request.user as JWTPayload
+
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { email }
+      })
+
+      const customer = await prisma.customer.findUnique({
+        where: { userId: user.id }
+      })
+
+      if (!customer)
+        return reply.status(400).send({
+          status: false,
+          error: 'UNREGISTERED_CUSTOMER'
+        })
+
+      let booking = await prisma.booking.findFirst({
+        where: {
+          id: bookingId,
+          locationId,
+          customerId: customer.id
+        }
+      })
+
+      if (!booking)
+        return reply.status(404).send({
+          status: false,
+          error: 'BOOKING_NOT_FOUND'
+        })
+
+      const bodyScheme = z.object({
+        datetime: z.string(),
+        observation: z.string().nullable().optional(),
+        canceled: z.boolean().default(false).nullable().optional(),
+        rating: z.number().max(5).nullable().optional(),
+        ratingReason: z.string().nullable().optional()
+      })
+
+      const { datetime, ...data } = bodyScheme.parse(request.body)
+
+      const service = await prisma.service.findUnique({
+        where: {
+          id: booking.serviceId,
+          salonId: location.salonId
+        }
+      })
+
+      if (!service)
+        return reply.status(404).send({
+          status: false,
+          error: 'SERVICE_NOT_FOUND'
+        })
+
+      const openingHour = await prisma.openingHour.findFirst({
+        where: { locationId }
+      })
+
+      if (!openingHour)
+        return {
+          status: [],
+          error: 'UNDEFINED_OPENING_HOURS'
+        }
+
+      const openingHours = handleOpeningHours(openingHour)
+
+      const now = dayjs()
+      const day = dayjs(datetime, 'YYYY-MM-DD HH:mm')
+      const hour = day.format('HH:mm')
+
+      if (!dayjs(booking.datetime).isSame(day) && now.diff(day) > 0)
+        return reply.status(400).send({
+          status: false,
+          error: 'INVALID_DATE'
+        })
+
+      const weekday = weekdays[day.day()]
+      const weekdayHours = openingHours[
+        weekday
+      ] as WeekdayOpeningHoursType | null
+
+      if (!weekdayHours)
+        return reply.status(400).send({
+          satsus: false,
+          error: 'CLOSED'
+        })
+
+      if (!dayjs(booking.datetime).isSame(day)) {
+        const timeSlots = await getTimeSlots(
+          weekdayHours,
+          [service],
+          [booking.professionalId],
+          locationId,
+          day
+        )
+
+        if (!timeSlots.includes(hour))
+          return reply.status(400).send({
+            satsus: false,
+            error: 'UNAVAILABLE_TIME'
+          })
+      }
+
+      booking = await prisma.booking.update({
+        data: {
+          customerId: customer.id,
+          locationId,
+          datetime: day.toDate(),
+          updatedAt: new Date(),
+          ...data
+        },
+        where: {
+          id: booking.id
+        }
+      })
+
+      return {
+        status: true,
+        booking
+      }
+    }
+  )
 }
