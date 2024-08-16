@@ -347,9 +347,9 @@ model Booking {
   professionalId  String
   datetime        DateTime
   observation     String?
-  canceled        Boolean
+  canceled        Boolean?
   customizedPrice Float?
-  rating          Int
+  rating          Int?
   ratingReason    String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now())
