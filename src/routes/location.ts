@@ -116,7 +116,7 @@ export async function locationRoutes(fastify: FastifyInstance) {
     })
 
     return reply.send({
-      openingHour: openingHour ? handleOpeningHours(openingHour) : undefined
+      openingHours: openingHour ? handleOpeningHours(openingHour) : null
     })
   })
 
